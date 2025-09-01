@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth.js required models
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -24,8 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -42,14 +37,14 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
-  password      String?   // For credentials auth
+  password      String?
   emailVerified DateTime?
   image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
   surveys       Survey[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 }
 
 model VerificationToken {
@@ -60,23 +55,21 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// NPS Survey models
 model Survey {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
   userId      String
-  elements    Json      // FormElement[]
-  settings    Json      // FormSettings
-  style       Json      // FormStyle
-  isActive    Boolean   @default(true)
-  version     Int       @default(1)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  elements    Json
+  settings    Json
+  style       Json
+  isActive    Boolean    @default(true)
+  version     Int        @default(1)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   responses   Response[]
-  
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([isActive])
 }
@@ -84,14 +77,13 @@ model Survey {
 model Response {
   id        String   @id @default(cuid())
   surveyId  String
-  data      Json     // Survey response data
+  data      Json
   userAgent String?
   pageUrl   String?
   ipAddress String?
   createdAt DateTime @default(now())
-  
   survey    Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  
+
   @@index([surveyId])
   @@index([createdAt])
 }

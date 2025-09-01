@@ -27,20 +27,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // En desarrollo: comparación directa
-          // En producción: bcrypt
-          let isPasswordValid = false;
-
-          if (process.env.NODE_ENV === "development") {
-            // Para desarrollo local con SQLite
-            isPasswordValid = credentials.password === user.password;
-          } else {
-            // Para producción con PostgreSQL
-            isPasswordValid = await bcrypt.compare(
-              credentials.password,
-              user.password
-            );
-          }
+          // Verificar contraseña con bcrypt
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
 
           if (!isPasswordValid) {
             return null;
