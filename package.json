@@ -9,7 +9,10 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "node prisma/seed-sqlite.js",
+    "db:seed:prod": "node prisma/seed-production.js",
+    "vercel-build": "prisma generate && prisma db push && npm run db:seed:prod && next build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
