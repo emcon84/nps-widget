@@ -7,6 +7,7 @@ import {
   DragOverlay,
   DragStartEvent,
 } from "@dnd-kit/core";
+import { Settings, Eye, Copy, Plus } from "lucide-react";
 
 import { RightSidebar } from "./RightSidebar";
 import { Canvas } from "./Canvas";
@@ -65,6 +66,9 @@ export function FormDesignerWithSave({
   const [showFormSettings, setShowFormSettings] = useState(false);
   const [formSettings, setFormSettings] = useState(initialSettings);
   const [formStyle, setFormStyle] = useState(initialStyle);
+  const [showMobileElementsPanel, setShowMobileElementsPanel] = useState(false);
+  const [showMobilePropertiesPanel, setShowMobilePropertiesPanel] =
+    useState(false);
   const isFirstRender = useRef(true);
 
   // Call onChange whenever elements, settings, or style change
@@ -206,6 +210,16 @@ export function FormDesignerWithSave({
     }
   };
 
+  // Función para agregar elementos directamente (para mobile)
+  const addElementDirectly = (elementType: string) => {
+    const newElement = createNewElement(elementType as ElementType);
+    if (newElement) {
+      setElements((prev) => [...prev, newElement]);
+      setSelectedElement(newElement); // Seleccionar automáticamente el nuevo elemento
+      setShowMobileElementsPanel(false); // Cerrar el panel móvil
+    }
+  };
+
   const handleSave = () => {
     if (onSave) {
       onSave({
@@ -256,7 +270,7 @@ export function FormDesignerWithSave({
         </div>
 
         {/* Preview Content */}
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl mx-auto p-4 sm:p-6">
           <PreviewMode elements={elements} />
         </div>
       </div>
@@ -289,42 +303,49 @@ export function FormDesignerWithSave({
   }
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Left Sidebar */}
-        <LeftSidebar />
+        {/* Left Sidebar - Hidden on mobile, expandable */}
+        <div className="lg:block hidden h-full">
+          <LeftSidebar />
+        </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Top Toolbar */}
-          <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Form Designer
-              </h2>
-              <span className="text-sm text-gray-500">
-                {elements.length} element{elements.length !== 1 ? "s" : ""}
-              </span>
+          <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                  Form Designer
+                </h2>
+                <span className="text-xs sm:text-sm text-gray-500">
+                  {elements.length} element{elements.length !== 1 ? "s" : ""}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setShowFormSettings(true)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
               >
-                Settings
+                <Settings className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
+                <span className="hidden sm:inline">Settings</span>
               </button>
               <button
                 onClick={() => setIsPreviewMode(true)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
               >
-                Preview
+                <Eye className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
+                <span className="hidden sm:inline">Preview</span>
               </button>
               <button
                 onClick={() => setShowCodeExport(true)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
               >
-                Export
+                <Copy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
+                <span className="hidden sm:inline">Export</span>
               </button>
               {onSave && (
                 <button
@@ -339,44 +360,74 @@ export function FormDesignerWithSave({
           </div>
 
           {/* Canvas */}
-          <Canvas
-            elements={elements}
+          {/* Canvas Area */}
+          <div className="flex-1 min-h-0 relative">
+            <Canvas
+              elements={elements}
+              selectedElement={selectedElement}
+              onSelectElement={setSelectedElement}
+              onUpdateElement={(element: FormElement) => {
+                setElements((prev) =>
+                  prev.map((el) => (el.id === element.id ? element : el))
+                );
+                // Also update the selected element to reflect changes
+                if (selectedElement && selectedElement.id === element.id) {
+                  setSelectedElement(element);
+                }
+              }}
+              onDeleteElement={(elementId: string) => {
+                setElements((prev) => prev.filter((el) => el.id !== elementId));
+                // Clear selection if deleted element was selected
+                if (selectedElement && selectedElement.id === elementId) {
+                  setSelectedElement(null);
+                }
+              }}
+            />
+
+            {/* Mobile Control Buttons */}
+            <div className="lg:hidden fixed bottom-4 right-4 z-10">
+              <div className="flex flex-col space-y-3 items-end">
+                {/* Elements Panel Button */}
+                <button
+                  className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => setShowMobileElementsPanel(true)}
+                  title="Add Elements"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+
+                {/* Properties Panel Button - Only show if element is selected */}
+                {selectedElement && (
+                  <button
+                    className="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
+                    onClick={() => setShowMobilePropertiesPanel(true)}
+                    title="Element Properties"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block h-full">
+          <RightSidebar
             selectedElement={selectedElement}
-            onSelectElement={setSelectedElement}
-            onUpdateElement={(element: FormElement) => {
+            onUpdateElement={(updatedElement: FormElement) => {
               setElements((prev) =>
-                prev.map((el) => (el.id === element.id ? element : el))
+                prev.map((el) =>
+                  el.id === updatedElement.id ? updatedElement : el
+                )
               );
-              // Also update the selected element to reflect changes
-              if (selectedElement && selectedElement.id === element.id) {
-                setSelectedElement(element);
-              }
-            }}
-            onDeleteElement={(elementId: string) => {
-              setElements((prev) => prev.filter((el) => el.id !== elementId));
-              // Clear selection if deleted element was selected
-              if (selectedElement && selectedElement.id === elementId) {
-                setSelectedElement(null);
+              // Also update the selected element to reflect changes in the sidebar
+              if (selectedElement && selectedElement.id === updatedElement.id) {
+                setSelectedElement(updatedElement);
               }
             }}
           />
         </div>
-
-        {/* Right Sidebar */}
-        <RightSidebar
-          selectedElement={selectedElement}
-          onUpdateElement={(updatedElement: FormElement) => {
-            setElements((prev) =>
-              prev.map((el) =>
-                el.id === updatedElement.id ? updatedElement : el
-              )
-            );
-            // Also update the selected element to reflect changes in the sidebar
-            if (selectedElement && selectedElement.id === updatedElement.id) {
-              setSelectedElement(updatedElement);
-            }
-          }}
-        />
 
         {/* Drag Overlay */}
         <DragOverlay>
@@ -385,6 +436,94 @@ export function FormDesignerWithSave({
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Mobile Elements Panel */}
+      {showMobileElementsPanel && (
+        <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Add Elements
+                </h3>
+                <button
+                  onClick={() => setShowMobileElementsPanel(false)}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              <LeftSidebar onAddElement={addElementDirectly} isMobile={true} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Properties Panel */}
+      {showMobilePropertiesPanel && selectedElement && (
+        <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Properties
+                </h3>
+                <button
+                  onClick={() => setShowMobilePropertiesPanel(false)}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              <RightSidebar
+                selectedElement={selectedElement}
+                onUpdateElement={(updatedElement: FormElement) => {
+                  setElements((prev) =>
+                    prev.map((el) =>
+                      el.id === updatedElement.id ? updatedElement : el
+                    )
+                  );
+                  // Also update the selected element to reflect changes in the sidebar
+                  if (
+                    selectedElement &&
+                    selectedElement.id === updatedElement.id
+                  ) {
+                    setSelectedElement(updatedElement);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -72,24 +72,24 @@ export default function NewSurveyPage() {
 
   return (
     <>
-      <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-4 flex-shrink-0">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="bg-white border-b border-gray-200 px-4 py-3 sm:py-4 flex-shrink-0">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 w-fit"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to Dashboard
               </Link>
-              <div className="h-6 border-l border-gray-300" />
+              <div className="hidden sm:block h-6 border-l border-gray-300" />
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+                <h1 className="text-base sm:text-lg font-semibold text-gray-900">
                   Create New Survey
                 </h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-xs sm:text-sm text-gray-500">
                   Design your NPS survey using the visual editor
                 </p>
               </div>
@@ -104,7 +104,7 @@ export default function NewSurveyPage() {
         </div>
 
         {/* Form Designer */}
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <FormDesignerWithSave
             onSave={handleSaveRequest}
             saveButtonText="Save Survey"
@@ -115,13 +115,13 @@ export default function NewSurveyPage() {
 
       {/* Name Dialog Modal */}
       {showNameDialog && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-md overflow-y-auto h-full w-full z-50 transition-all duration-300">
-          <div className="relative top-20 mx-auto p-6 w-96 transform transition-all duration-300 scale-100">
-            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-md overflow-y-auto h-full w-full z-50 transition-all duration-300 p-4">
+          <div className="relative top-4 sm:top-20 mx-auto p-4 sm:p-6 w-full max-w-md sm:w-96 transform transition-all duration-300 scale-100">
+            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
                 Save Survey
               </h3>
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Survey Title *
@@ -130,7 +130,7 @@ export default function NewSurveyPage() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder-gray-500"
+                    className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm sm:text-base"
                     placeholder="Enter survey title..."
                     autoFocus
                   />
@@ -142,16 +142,16 @@ export default function NewSurveyPage() {
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder-gray-500 resize-none"
+                    className="w-full border border-gray-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder-gray-500 resize-none text-sm sm:text-base"
                     rows={3}
                     placeholder="Enter survey description..."
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-8">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-6 sm:mt-8">
                 <button
                   onClick={() => setShowNameDialog(false)}
-                  className="px-6 py-2.5 bg-gray-100/80 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-gray-200/80 transition-all duration-200 font-medium hover:scale-105"
+                  className="px-4 sm:px-6 py-2.5 bg-gray-100/80 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-gray-200/80 transition-all duration-200 font-medium hover:scale-105 order-2 sm:order-1"
                   disabled={isLoading}
                 >
                   Cancel
@@ -159,10 +159,10 @@ export default function NewSurveyPage() {
                 <button
                   onClick={handleFinalSave}
                   disabled={isLoading || !title.trim()}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="px-4 sm:px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium hover:scale-105 shadow-lg hover:shadow-xl order-1 sm:order-2"
                 >
                   {isLoading ? (
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                       Saving...
                     </div>

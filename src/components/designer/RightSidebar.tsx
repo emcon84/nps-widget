@@ -23,7 +23,7 @@ export function RightSidebar({
 }: RightSidebarProps) {
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 p-6">
+      <div className="w-80 bg-white border-l border-gray-200 p-6 h-full min-h-screen">
         <div className="text-center text-gray-500 mt-12">
           <div className="text-4xl mb-4">⚙️</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -99,7 +99,7 @@ export function RightSidebar({
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
+    <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto h-full min-h-screen">
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Properties</h2>
         <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">

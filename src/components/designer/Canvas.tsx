@@ -47,7 +47,7 @@ function DeleteButton({
     <button
       onMouseDown={handleMouseDown}
       onClick={handleClick}
-      className={`absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 z-50 ${
+      className={`absolute -top-2 -right-2 w-8 h-8 sm:w-6 sm:h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 z-50 ${
         isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
       }`}
       title="Delete element"
@@ -58,7 +58,7 @@ function DeleteButton({
       }}
       data-no-dnd="true"
     >
-      <X size={12} />
+      <X size={14} />
     </button>
   );
 }
@@ -134,10 +134,11 @@ function DraggableElement({
       ref={setNodeRef}
       style={style}
       className={`
-        absolute select-none
-        ${isDragging ? "opacity-50 z-50 cursor-grabbing" : "z-10"}
+        absolute select-none transition-transform duration-200
+        ${isDragging ? "opacity-50 z-50 cursor-grabbing scale-105" : "z-10"}
         ${isSelected ? "ring-2 ring-blue-500 ring-offset-2" : ""}
         ${dragDisabled ? "cursor-pointer" : "cursor-move"}
+        p-1 sm:p-0
       `}
       {...filteredListeners}
       {...attributes}
@@ -147,7 +148,9 @@ function DraggableElement({
           onClick={handleSelection}
           onMouseEnter={() => setDragDisabled(true)}
           onMouseLeave={() => setDragDisabled(false)}
-          className="absolute inset-0 cursor-pointer z-10 bg-transparent border-none"
+          onTouchStart={() => setDragDisabled(true)}
+          onTouchEnd={() => setDragDisabled(false)}
+          className="absolute inset-0 cursor-pointer z-10 bg-transparent border-none touch-manipulation"
           style={{ pointerEvents: "auto" }}
           data-selection="true"
           title="Click to select element"
@@ -157,7 +160,9 @@ function DraggableElement({
           style={{
             width: element.dimensions?.width || 300,
             height: element.dimensions?.height || 120,
+            minWidth: "280px", // Ensure minimum width on mobile
           }}
+          className="bg-white rounded-lg shadow-sm border border-gray-200"
         >
           <ElementRenderer
             element={element}
@@ -195,6 +200,7 @@ export function Canvas({
         className={`
           w-full h-full relative bg-white
           ${isOver ? "bg-blue-50" : ""}
+          min-h-[calc(100vh-8rem)] sm:min-h-[500px]
         `}
         onClick={() => onSelectElement(null)}
         style={{
@@ -205,14 +211,19 @@ export function Canvas({
         }}
       >
         {elements.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center p-4">
             <div className="text-center">
-              <div className="text-gray-400 text-6xl mb-4">📋</div>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <div className="text-gray-400 text-4xl sm:text-6xl mb-4">📋</div>
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
                 Start Building Your Survey
               </h3>
-              <p className="text-gray-600 max-w-md">
-                Drag elements from the left sidebar to create your NPS survey.
+              <p className="text-sm sm:text-base text-gray-600 max-w-md">
+                <span className="hidden sm:inline">
+                  Drag elements from the left sidebar to create your NPS survey.
+                </span>
+                <span className="sm:hidden">
+                  Tap the + button to add elements to your survey.
+                </span>{" "}
                 Click on elements to customize their properties.
               </p>
             </div>

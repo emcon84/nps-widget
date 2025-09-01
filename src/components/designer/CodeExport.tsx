@@ -420,8 +420,8 @@ export function CodeExport({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
-      <div className="bg-white/95 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 transition-all duration-300">
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 transform transition-all duration-300 scale-100 mx-2 sm:mx-0">
         <div className="p-6 border-b border-gray-200/50 bg-white/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
