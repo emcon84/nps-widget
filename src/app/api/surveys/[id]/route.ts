@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 // GET /api/surveys/[id] - Obtener survey específico
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,9 +15,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const survey = await db.survey.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -46,7 +48,7 @@ export async function GET(
 // PUT /api/surveys/[id] - Actualizar survey
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -55,12 +57,13 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const { title, description, elements, settings, style, isActive } =
       await req.json();
 
     const existingSurvey = await db.survey.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -71,7 +74,7 @@ export async function PUT(
 
     const survey = await db.survey.update({
       where: {
-        id: params.id,
+        id: id,
       },
       data: {
         title,
@@ -104,7 +107,7 @@ export async function PUT(
 // DELETE /api/surveys/[id] - Eliminar survey
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -113,9 +116,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const existingSurvey = await db.survey.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -126,7 +131,7 @@ export async function DELETE(
 
     await db.survey.delete({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
