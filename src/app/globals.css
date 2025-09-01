@@ -24,3 +24,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilos para placeholders más visibles */
+::placeholder {
+  color: #9ca3af; /* gray-400 */
+  opacity: 1;
+}
+
+input[type="text"]:not(:placeholder-shown),
+input[type="number"]:not(:placeholder-shown),
+textarea:not(:placeholder-shown),
+select:not([value=""]) {
+  color: #111827 !important; /* gray-900 for actual content */
+}
+
+/* Asegurar que el texto ingresado sea negro */
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  color: #111827; /* gray-900 */
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important; /* gray-900 */
+}

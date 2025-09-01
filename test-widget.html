@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test NPS Widget - Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .demo-container {
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      .demo-header {
+        margin-bottom: 30px;
+      }
+
+      .demo-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+      }
+
+      .demo-subtitle {
+        font-size: 1.125rem;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .demo-description {
+        color: #9ca3af;
+        line-height: 1.6;
+      }
+
+      .demo-content {
+        margin: 40px 0;
+      }
+
+      .feature-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+        text-align: left;
+      }
+
+      .feature-item {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+      }
+
+      .feature-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+      }
+
+      .feature-desc {
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .btn-secondary:hover {
+        background: #e5e7eb;
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 16px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: slideUp 0.3s ease;
+      }
+
+      .modal-header {
+        padding: 24px 24px 0 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 0;
+        padding-bottom: 16px;
+      }
+
+      .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 4px;
+        border-radius: 4px;
+      }
+
+      .modal-close:hover {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .modal-body {
+        padding: 24px;
+      }
+
+      .widget-container {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 20px;
+        background: #f9fafb;
+        margin-bottom: 20px;
+      }
+
+      .widget-info {
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .widget-info h4 {
+        color: #1e40af;
+        margin-bottom: 8px;
+        font-size: 1rem;
+      }
+
+      .widget-info p {
+        color: #1e3a8a;
+        font-size: 0.875rem;
+        margin: 0;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.875rem;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+
+      .status-success {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22c55e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-container">
+      <div class="demo-header">
+        <h1 class="demo-title">🎯 NPS Widget Demo</h1>
+        <p class="demo-subtitle">Prueba el widget NPS embebible en acción</p>
+        <p class="demo-description">
+          Este es un ejemplo de cómo se vería tu widget NPS cuando lo embebas en
+          cualquier sitio web. El widget está configurado para enviar datos a un
+          webhook de prueba.
+        </p>
+      </div>
+
+      <div class="demo-content">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-title">📊 Recolección de Datos</div>
+            <div class="feature-desc">
+              Los datos se envían automáticamente al endpoint configurado en
+              formato JSON
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">🎨 Completamente Personalizable</div>
+            <div class="feature-desc">
+              Diseña tu encuesta con elementos drag & drop y personaliza cada
+              detalle
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">⚡ Fácil Integración</div>
+            <div class="feature-desc">
+              Solo copia y pega el código en cualquier página HTML
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-title">📱 Responsive</div>
+            <div class="feature-desc">
+              El widget se adapta automáticamente a cualquier tamaño de pantalla
+            </div>
+          </div>
+        </div>
+
+        <div style="margin: 30px 0">
+          <div class="status-indicator status-success">
+            <div class="status-dot"></div>
+            Webhook configurado: httpbin.org (CORS habilitado)
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="openModal()">
+          🚀 Ver Widget en Acción
+        </button>
+        <a
+          href="http://localhost:3000"
+          class="btn btn-secondary"
+          target="_blank"
+        >
+          🎨 Abrir Designer
+        </a>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="widgetModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Widget NPS en Vivo</h2>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="widget-info">
+            <h4>🧪 Entorno de Prueba</h4>
+            <p>
+              Este widget está configurado para enviar datos a
+              <strong>httpbin.org</strong> que soporta CORS. Puedes completar la
+              encuesta y ver los datos en la consola del navegador (F12).
+            </p>
+          </div>
+
+          <div class="widget-container">
+            <!-- Aquí se insertará el widget -->
+            <div id="nps-nps-survey-1756739096474"></div>
+          </div>
+          <div style="text-align: center; margin-top: 20px">
+            <button
+              onclick="console.log('Ver datos en Console (F12)')"
+              class="btn btn-secondary"
+            >
+              � Ver Datos en Console (F12)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Modal Functions
+      function openModal() {
+        document.getElementById("widgetModal").classList.add("show");
+        // Reinicializar el widget cada vez que se abre el modal
+        initializeWidget();
+      }
+
+      function closeModal() {
+        document.getElementById("widgetModal").classList.remove("show");
+      }
+
+      // Cerrar modal al hacer click fuera
+      document
+        .getElementById("widgetModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeModal();
+          }
+        });
+
+      // Cerrar modal con tecla Escape
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      // Widget Script
+      function initializeWidget() {
+        // Limpiar el contenedor
+        const container = document.getElementById(
+          "nps-nps-survey-1756739096474"
+        );
+        container.innerHTML = "";
+
+        // Script compacto ultra-minificado
+        (function () {
+          var config = {
+            id: "nps-survey-1756739096474",
+            elements: [
+              {
+                id: "nps-1756738071200",
+                type: "nps",
+                label: "NPS Question",
+                required: false,
+                minValue: 0,
+                maxValue: 10,
+                minLabel: "Not likely",
+                maxLabel: "Very likely",
+                displayType: "numbers",
+              },
+              {
+                id: "text-input-1756738078018",
+                type: "text-input",
+                label: "Text Input",
+                required: false,
+                placeholder: "Enter text...",
+              },
+            ],
+            style: {
+              fontFamily: "Arial, sans-serif",
+              primaryColor: "#3b82f6",
+              backgroundColor: "#ffffff",
+              borderRadius: "8px",
+            },
+            settings: {
+              submitEndpoint: "https://httpbin.org/post",
+              submitMethod: "POST",
+              webhookHeaders: {},
+              successMessage: "Gracias por tu feedback!",
+              errorMessage: "Error al enviar. Por favor intenta de nuevo.",
+            },
+          };
+
+          var d = document;
+          var s = d.createElement("style");
+          s.textContent =
+            ".nw{max-width:600px;margin:20px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);font-family:Arial,sans-serif}.ne{margin-bottom:20px}.nl{display:block;font-weight:600;margin-bottom:8px;color:#374151}.nr{color:#ef4444}.ns{display:flex;gap:8px;justify-content:space-between;margin:16px 0}.nb{flex:1;padding:12px 8px;border:2px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;transition:all 0.2s;font-weight:500;text-align:center}.nb:hover{border-color:" +
+            config.style.primaryColor +
+            ";background:" +
+            config.style.primaryColor +
+            "15}.nb.sel{border-color:" +
+            config.style.primaryColor +
+            ";background:" +
+            config.style.primaryColor +
+            ";color:#fff}.ni{width:100%;padding:12px;border:2px solid #d1d5db;border-radius:6px;font-size:14px}.ni:focus{outline:none;border-color:" +
+            config.style.primaryColor +
+            "}.btn{background:" +
+            config.style.primaryColor +
+            ";color:#fff;padding:12px 24px;border:none;border-radius:6px;font-weight:600;cursor:pointer}";
+          d.head.appendChild(s);
+
+          var html = '<div class="nw">';
+          config.elements.forEach(function (e) {
+            html += '<div class="ne">';
+            if (e.type === "nps") {
+              html +=
+                '<label class="nl">' +
+                e.label +
+                (e.required ? ' <span class="nr">*</span>' : "") +
+                "</label>";
+              html +=
+                '<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:#6b7280">';
+              html += "<span>" + (e.minLabel || "Not likely") + "</span>";
+              html +=
+                "<span>" + (e.maxLabel || "Very likely") + "</span></div>";
+              html += '<div class="ns" data-id="' + e.id + '">';
+              for (var i = e.minValue; i <= e.maxValue; i++) {
+                html +=
+                  '<button type="button" class="nb" data-v="' +
+                  i +
+                  '">' +
+                  i +
+                  "</button>";
+              }
+              html += "</div>";
+            } else if (e.type === "text-input") {
+              html +=
+                '<label class="nl">' +
+                e.label +
+                (e.required ? ' <span class="nr">*</span>' : "") +
+                "</label>";
+              html +=
+                '<input type="text" class="ni" placeholder="' +
+                (e.placeholder || "") +
+                '" data-id="' +
+                e.id +
+                '">';
+            }
+            html += "</div>";
+          });
+          html +=
+            '<button type="submit" class="btn">Submit Survey</button></div>';
+
+          var container = d.getElementById("nps-" + config.id);
+          container.innerHTML = html;
+
+          container.querySelectorAll(".nb").forEach(function (b) {
+            b.addEventListener("click", function () {
+              this.parentElement.querySelectorAll(".nb").forEach(function (x) {
+                x.classList.remove("sel");
+              });
+              this.classList.add("sel");
+            });
+          });
+
+          container
+            .querySelector(".btn")
+            .addEventListener("click", function () {
+              var formData = {};
+              container.querySelectorAll(".ns .sel").forEach(function (b) {
+                formData[b.parentElement.dataset.id] = b.dataset.v;
+              });
+              container.querySelectorAll(".ni").forEach(function (i) {
+                if (i.value) formData[i.dataset.id] = i.value;
+              });
+
+              var data = {
+                timestamp: new Date().toISOString(),
+                formId: config.id,
+                responses: formData,
+                userAgent: navigator.userAgent,
+                pageUrl: location.href,
+              };
+
+              console.log("Survey Data to send:", data);
+
+              if (config.settings.submitEndpoint) {
+                var btn = this;
+                btn.disabled = true;
+                btn.textContent = "Enviando...";
+
+                fetch(config.settings.submitEndpoint, {
+                  method: config.settings.submitMethod,
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data),
+                })
+                  .then(function (r) {
+                    if (r.ok) {
+                      return r.json();
+                    } else {
+                      throw new Error("Server error");
+                    }
+                  })
+                  .then(function (result) {
+                    console.log("Server response:", result);
+                    container.innerHTML =
+                      '<div style="text-align:center;padding:40px;color:#10b981"><h3 style="margin:0 0 8px 0">' +
+                      config.settings.successMessage +
+                      '</h3><p style="margin:0;color:#6b7280">Tu respuesta ha sido registrada.</p><button onclick="initializeWidget()" style="margin-top:20px;background:#3b82f6;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;">Probar de Nuevo</button></div>';
+                  })
+                  .catch(function (e) {
+                    console.error("Error:", e);
+                    var err = d.createElement("div");
+                    err.style.cssText =
+                      "background:#fef2f2;color:#dc2626;padding:12px;border-radius:6px;margin-top:16px;text-align:center";
+                    err.innerHTML =
+                      "<strong>Error de envio detectado</strong><br>Los datos se han mostrado en la consola (F12).<br><small>Revisa la pestana Console para ver los datos.</small>";
+                    container.appendChild(err);
+                    btn.disabled = false;
+                    btn.textContent = "Submit Survey";
+                  });
+              } else {
+                console.log("Survey Data:", data);
+                alert("Survey submitted!");
+              }
+            });
+        })();
+      }
+    </script>
+  </body>
+</html>
