@@ -420,24 +420,24 @@ export function CodeExport({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300">
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 transform transition-all duration-300 scale-100">
+        <div className="p-6 border-b border-gray-200/50 bg-white/80 backdrop-blur-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <Code className="w-5 h-5" />
+            <h2 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
+              <Code className="w-5 h-5 text-blue-600" />
               Export Survey Code
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100/80 transition-all duration-200 hover:scale-110"
             >
               ✕
             </button>
           </div>
 
           {/* Configuration Status */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div className="mt-4 p-3 bg-gray-50/80 backdrop-blur-sm rounded-xl border border-gray-200/50">
             <div className="flex items-center gap-2 mb-2">
               <div
                 className={`w-2 h-2 rounded-full ${formSettings?.submitEndpoint ? "bg-green-500" : "bg-yellow-500"}`}
