@@ -225,7 +225,9 @@ export function FormDesignerWithSave({
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <h2 className="text-lg font-semibold text-gray-900">Preview Mode</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Preview Mode
+                </h2>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   Live Preview
                 </span>
@@ -234,15 +236,25 @@ export function FormDesignerWithSave({
                 onClick={() => setIsPreviewMode(false)}
                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:from-gray-200 hover:to-gray-300 font-medium transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-gray-300/50"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
                 </svg>
                 Exit Preview
               </button>
             </div>
           </div>
         </div>
-        
+
         {/* Preview Content */}
         <div className="max-w-4xl mx-auto p-6">
           <PreviewMode elements={elements} />
