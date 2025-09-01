@@ -117,7 +117,7 @@ function DraggableElement({
     ? {}
     : {
         ...listeners,
-        onPointerDown: (e: any) => {
+        onPointerDown: (e: React.PointerEvent) => {
           const target = e.target as HTMLElement;
           if (
             target.closest('[data-no-dnd="true"]') ||

@@ -10,7 +10,7 @@ import {
 
 import { RightSidebar } from "./RightSidebar";
 import { Canvas } from "./Canvas";
-import { FormElement } from "@/types/form-elements";
+import { FormElement, ElementType } from "@/types/form-elements";
 import { LeftSidebar } from "./LeftSidebar";
 import { PreviewMode } from "./PreviewMode";
 import { CodeExport } from "./CodeExport";
@@ -46,7 +46,7 @@ export function FormDesigner() {
     // Si se está arrastrando desde el sidebar izquierdo al canvas
     if (over.id === "canvas" && typeof active.id === "string") {
       const elementType = active.id;
-      const newElement = createNewElement(elementType as any);
+      const newElement = createNewElement(elementType as ElementType);
 
       if (newElement) {
         setElements((prev) => [...prev, newElement]);
@@ -302,7 +302,7 @@ export function FormDesigner() {
         {showFormSettings && (
           <FormSettings
             isOpen={showFormSettings}
-            settings={formSettings}
+            formSettings={formSettings}
             onClose={() => setShowFormSettings(false)}
             onSave={setFormSettings}
           />

@@ -5,7 +5,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 
 interface FormSettingsProps {
   isOpen: boolean;
-  settings: {
+  formSettings: {
     submitEndpoint: string;
     submitMethod: "POST" | "PUT" | "PATCH";
     webhookHeaders: Record<string, string>;
@@ -13,16 +13,18 @@ interface FormSettingsProps {
     errorMessage: string;
   };
   onClose: () => void;
-  onSave: (settings: any) => void;
+  onSave: (settings: FormSettingsProps["formSettings"]) => void;
 }
+
+type FormSettingsType = FormSettingsProps["formSettings"];
 
 export function FormSettings({
   isOpen,
-  settings,
+  formSettings,
   onClose,
   onSave,
 }: FormSettingsProps) {
-  const [localSettings, setLocalSettings] = useState(settings);
+  const [localSettings, setLocalSettings] = useState(formSettings);
   const [newHeaderKey, setNewHeaderKey] = useState("");
   const [newHeaderValue, setNewHeaderValue] = useState("");
 
@@ -35,7 +37,7 @@ export function FormSettings({
 
   const addHeader = () => {
     if (newHeaderKey && newHeaderValue) {
-      setLocalSettings((prev) => ({
+      setLocalSettings((prev: FormSettingsType) => ({
         ...prev,
         webhookHeaders: {
           ...prev.webhookHeaders,

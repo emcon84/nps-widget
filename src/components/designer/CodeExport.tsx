@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { FormElement } from "@/types/form-elements";
+import {
+  FormElement,
+  NPSElement,
+  TextInputElement,
+  TextAreaElement,
+  SelectElement,
+  HeadingElement,
+  TextElement,
+} from "@/types/form-elements";
 import { Copy, Check, Download, Code } from "lucide-react";
 
 interface CodeExportProps {
@@ -340,20 +348,22 @@ export function CodeExport({
         label: el.label,
         required: el.required,
         ...(el.type === "nps" && {
-          minValue: el.minValue,
-          maxValue: el.maxValue,
-          minLabel: el.minLabel,
-          maxLabel: el.maxLabel,
-          displayType: el.displayType,
+          minValue: (el as NPSElement).minValue,
+          maxValue: (el as NPSElement).maxValue,
+          minLabel: (el as NPSElement).minLabel,
+          maxLabel: (el as NPSElement).maxLabel,
+          displayType: (el as NPSElement).displayType,
         }),
-        ...(el.type === "text-input" && { placeholder: el.placeholder }),
+        ...(el.type === "text-input" && {
+          placeholder: (el as any).placeholder,
+        }),
         ...(el.type === "textarea" && {
-          placeholder: el.placeholder,
-          rows: el.rows,
+          placeholder: (el as any).placeholder,
+          rows: (el as any).rows,
         }),
         ...(el.type === "select" && {
-          options: el.options,
-          placeholder: el.placeholder,
+          options: (el as any).options,
+          placeholder: (el as any).placeholder,
         }),
       })),
     }
@@ -448,7 +458,7 @@ export function CodeExport({
             ) : (
               <p className="text-xs text-gray-600">
                 Los datos se mostrarán en la consola. Configura un endpoint en
-                "Configuración" para envío automático.
+                &quot;Configuración&quot; para envío automático.
               </p>
             )}
           </div>
@@ -585,11 +595,11 @@ export function CodeExport({
 
 // Helper functions
 function getElementSpecificConfig(element: FormElement) {
-  const config: any = {};
+  const config: Record<string, unknown> = {};
 
   switch (element.type) {
     case "nps":
-      const npsEl = element as any;
+      const npsEl = element as NPSElement;
       config.minValue = npsEl.minValue;
       config.maxValue = npsEl.maxValue;
       config.minLabel = npsEl.minLabel;
