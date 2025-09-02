@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { FormDesignerWithSave } from "@/components/designer/FormDesignerWithSave";
 import Link from "next/link";
 import { ArrowLeft, Save, Eye, ExternalLink, BarChart3 } from "lucide-react";
+import { useModal } from "@/components/ui/Modal";
 
 interface Survey {
   id: string;
@@ -31,6 +32,7 @@ export default function EditSurveyPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [formData, setFormData] = useState<any>(null);
+  const { showModal, ModalComponent } = useModal();
 
   useEffect(() => {
     fetchSurvey();
@@ -53,8 +55,14 @@ export default function EditSurveyPage() {
       setDescription(surveyData.description || "");
     } catch (error) {
       console.error("Error fetching survey:", error);
-      alert("Error loading survey. Redirecting to dashboard.");
-      router.push("/dashboard");
+      showModal({
+        type: "error",
+        title: "Error",
+        children: "Error loading survey. Redirecting to dashboard.",
+        onConfirm: () => {
+          router.push("/dashboard");
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -91,10 +99,19 @@ export default function EditSurveyPage() {
 
       const updatedSurvey = await response.json();
       setSurvey(updatedSurvey);
-      alert("Survey saved successfully!");
+      showModal({
+        type: "success",
+        title: "Success",
+        children: "Survey saved successfully!",
+      });
     } catch (error) {
       console.error("Error saving survey:", error);
-      alert("Error saving survey. Please try again.");
+      showModal({
+        type: "error",
+        title: "Error",
+        children:
+          "Error saving survey. Please check your connection and try again.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -125,9 +142,19 @@ export default function EditSurveyPage() {
 
       const updatedSurvey = await response.json();
       setSurvey(updatedSurvey);
+      showModal({
+        type: "success",
+        title: "Status Updated",
+        children: `Survey ${updatedSurvey.isActive ? "activated" : "deactivated"} successfully!`,
+      });
     } catch (error) {
       console.error("Error updating survey status:", error);
-      alert("Error updating survey status. Please try again.");
+      showModal({
+        type: "error",
+        title: "Error",
+        children:
+          "Error updating survey status. Please check your connection and try again.",
+      });
     }
   };
 
@@ -237,6 +264,9 @@ export default function EditSurveyPage() {
           isLoading={isSaving}
         />
       </div>
+
+      {/* Modal Component */}
+      <ModalComponent />
     </div>
   );
 }

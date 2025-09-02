@@ -15,6 +15,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { useModal } from "@/components/ui/Modal";
 
 interface Survey {
   id: string;
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { showModal, ModalComponent } = useModal();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -67,32 +69,61 @@ export default function Dashboard() {
       if (response.ok) {
         fetchSurveys(); // Refresh the list
       } else {
-        alert("Failed to duplicate survey");
+        showModal({
+          type: "error",
+          title: "Error",
+          children: "Failed to duplicate survey. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Error duplicating survey:", error);
-      alert("Error duplicating survey");
+      showModal({
+        type: "error",
+        title: "Error",
+        children:
+          "Error duplicating survey. Please check your connection and try again.",
+      });
     }
   };
 
   const handleDelete = async (surveyId: string) => {
-    if (!confirm("Are you sure you want to delete this survey?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/surveys/${surveyId}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        fetchSurveys(); // Refresh the list
-      } else {
-        alert("Failed to delete survey");
-      }
-    } catch (error) {
-      console.error("Error deleting survey:", error);
-      alert("Error deleting survey");
-    }
+    showModal({
+      type: "warning",
+      title: "Confirm Delete",
+      children:
+        "Are you sure you want to delete this survey? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`/api/surveys/${surveyId}`, {
+            method: "DELETE",
+          });
+          if (response.ok) {
+            fetchSurveys(); // Refresh the list
+            showModal({
+              type: "success",
+              title: "Success",
+              children: "Survey deleted successfully.",
+            });
+          } else {
+            showModal({
+              type: "error",
+              title: "Error",
+              children: "Failed to delete survey. Please try again.",
+            });
+          }
+        } catch (error) {
+          console.error("Error deleting survey:", error);
+          showModal({
+            type: "error",
+            title: "Error",
+            children:
+              "Error deleting survey. Please check your connection and try again.",
+          });
+        }
+      },
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
   };
 
   if (status === "loading") {
@@ -460,6 +491,9 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Modal Component */}
+      <ModalComponent />
     </div>
   );
 }

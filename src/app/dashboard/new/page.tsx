@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormDesignerWithSave } from "@/components/designer/FormDesignerWithSave";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useModal } from "@/components/ui/Modal";
 
 export default function NewSurveyPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function NewSurveyPage() {
   const [description, setDescription] = useState("");
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [formData, setFormData] = useState<any>(null);
+  const { showModal, ModalComponent } = useModal();
 
   const handleSaveRequest = (data: any) => {
     // Store the form data and show name dialog
@@ -22,7 +24,11 @@ export default function NewSurveyPage() {
 
   const handleFinalSave = async () => {
     if (!title.trim()) {
-      alert("Please enter a survey title");
+      showModal({
+        type: "warning",
+        title: "Validation Error",
+        children: "Please enter a survey title before saving.",
+      });
       return;
     }
 
@@ -61,10 +67,22 @@ export default function NewSurveyPage() {
       }
 
       const survey = await response.json();
-      router.push(`/dashboard/edit/${survey.id}`);
+      showModal({
+        type: "success",
+        title: "Success",
+        children: "Survey created successfully! Redirecting to editor...",
+        onConfirm: () => {
+          router.push(`/dashboard/edit/${survey.id}`);
+        },
+      });
     } catch (error) {
       console.error("Error creating survey:", error);
-      alert("Error creating survey. Please try again.");
+      showModal({
+        type: "error",
+        title: "Error",
+        children:
+          "Error creating survey. Please check your connection and try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -175,6 +193,9 @@ export default function NewSurveyPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Component */}
+      <ModalComponent />
     </>
   );
 }

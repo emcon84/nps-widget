@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Download, Filter } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  BarChart3,
+  Users,
+  TrendingUp,
+  Filter,
+} from "lucide-react";
+import { useModal } from "@/components/ui/Modal";
 
 interface Survey {
   id: string;
@@ -30,6 +38,7 @@ export default function ResultsPage() {
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { showModal, ModalComponent } = useModal();
 
   useEffect(() => {
     fetchData();
@@ -59,8 +68,14 @@ export default function ResultsPage() {
       setResponses([]); // Placeholder empty array
     } catch (error) {
       console.error("Error fetching data:", error);
-      alert("Error loading results. Redirecting to dashboard.");
-      router.push("/dashboard");
+      showModal({
+        type: "error",
+        title: "Error",
+        children: "Error loading results. Redirecting to dashboard.",
+        onConfirm: () => {
+          router.push("/dashboard");
+        },
+      });
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +83,12 @@ export default function ResultsPage() {
 
   const downloadCSV = () => {
     // TODO: Implement CSV export
-    alert("CSV export will be implemented in the next phase");
+    showModal({
+      type: "info",
+      title: "Coming Soon",
+      children:
+        "CSV export functionality will be implemented in the next phase. Stay tuned!",
+    });
   };
 
   if (isLoading) {
@@ -330,6 +350,9 @@ export default function ResultsPage() {
           )}
         </div>
       </div>
+
+      {/* Modal Component */}
+      <ModalComponent />
     </div>
   );
 }

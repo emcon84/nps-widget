@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -17,25 +17,262 @@ import { PreviewMode } from "./PreviewMode";
 import { CodeExport } from "./CodeExport";
 import { FormSettings } from "./FormSettings";
 
+// =================== TYPES ===================
 interface FormDesignerWithSaveProps {
-  onSave?: (data: {
-    elements: FormElement[];
-    settings: any;
-    style: any;
-  }) => void;
-  onChange?: (data: {
-    elements: FormElement[];
-    settings: any;
-    style: any;
-  }) => void;
+  onSave?: (data: FormSaveData) => void;
+  onChange?: (data: FormSaveData) => void;
   saveButtonText?: string;
   isLoading?: boolean;
   initialElements?: FormElement[];
-  initialSettings?: any;
-  initialStyle?: any;
-  surveyId?: string; // ID del survey para el widget embebible
+  initialSettings?: FormSettingsData;
+  initialStyle?: StyleData;
+  surveyId?: string;
 }
 
+interface FormSaveData {
+  elements: FormElement[];
+  settings: FormSettingsData;
+  style: StyleData;
+}
+
+interface FormSettingsData {
+  submitEndpoint: string;
+  submitMethod: "POST" | "PUT" | "PATCH";
+  webhookHeaders: Record<string, string>;
+  successMessage: string;
+  errorMessage: string;
+}
+
+interface StyleData {
+  backgroundColor: string;
+  textColor: string;
+  primaryColor: string;
+  borderRadius: string;
+  fontFamily: string;
+}
+
+// =================== CUSTOM HOOKS FOR SAVE FUNCTIONALITY ===================
+
+/**
+ * Hook para manejar estado persistente con auto-save
+ * Principio SRP: Gestión de persistencia y auto-save
+ */
+function usePersistentFormState(
+  initialElements: FormElement[],
+  initialSettings: FormSettingsData,
+  initialStyle: StyleData,
+  onChange?: (data: FormSaveData) => void
+) {
+  const [elements, setElements] = useState<FormElement[]>(initialElements);
+  const [settings, setSettings] = useState<FormSettingsData>(initialSettings);
+  const [style, setStyle] = useState<StyleData>(initialStyle);
+
+  // Auto-save cuando cambia algo
+  useEffect(() => {
+    if (onChange) {
+      onChange({ elements, settings, style });
+    }
+  }, [elements, settings, style, onChange]);
+
+  const updateElements = useCallback((newElements: FormElement[]) => {
+    setElements(newElements);
+  }, []);
+
+  const updateSettings = useCallback((newSettings: FormSettingsData) => {
+    setSettings(newSettings);
+  }, []);
+
+  const updateStyle = useCallback((newStyle: StyleData) => {
+    setStyle(newStyle);
+  }, []);
+
+  return {
+    elements,
+    settings,
+    style,
+    updateElements,
+    updateSettings,
+    updateStyle,
+  };
+}
+
+/**
+ * Hook para manejar operaciones de elementos del formulario
+ * Principio SRP: Una sola responsabilidad - gestión de elementos
+ */
+function useFormElementOperations(
+  elements: FormElement[],
+  updateElements: (elements: FormElement[]) => void
+) {
+  const [selectedElement, setSelectedElement] = useState<FormElement | null>(
+    null
+  );
+
+  const addElement = useCallback(
+    (element: FormElement) => {
+      updateElements([...elements, element]);
+    },
+    [elements, updateElements]
+  );
+
+  const updateElement = useCallback(
+    (updatedElement: FormElement) => {
+      const newElements = elements.map((el) =>
+        el.id === updatedElement.id ? updatedElement : el
+      );
+      updateElements(newElements);
+      setSelectedElement(updatedElement);
+    },
+    [elements, updateElements]
+  );
+
+  const deleteElement = useCallback(
+    (elementId: string) => {
+      const newElements = elements.filter((el) => el.id !== elementId);
+      updateElements(newElements);
+      setSelectedElement((prev) => (prev?.id === elementId ? null : prev));
+    },
+    [elements, updateElements]
+  );
+
+  const clearAllElements = useCallback(() => {
+    updateElements([]);
+    setSelectedElement(null);
+  }, [updateElements]);
+
+  const selectElement = useCallback((element: FormElement | null) => {
+    setSelectedElement(element);
+  }, []);
+
+  const duplicateElement = useCallback(
+    (elementId: string) => {
+      const elementToDuplicate = elements.find((el) => el.id === elementId);
+      if (elementToDuplicate) {
+        const duplicatedElement = {
+          ...elementToDuplicate,
+          id: `${elementToDuplicate.type}-${Date.now()}`,
+          position: {
+            x: elementToDuplicate.position.x + 20,
+            y: elementToDuplicate.position.y + 20,
+          },
+        };
+        addElement(duplicatedElement);
+      }
+    },
+    [elements, addElement]
+  );
+
+  return {
+    selectedElement,
+    addElement,
+    updateElement,
+    deleteElement,
+    clearAllElements,
+    selectElement,
+    duplicateElement,
+  };
+}
+
+/**
+ * Factory mejorado para crear elementos con mejor configuración
+ * Principio OCP: Abierto para extensión, cerrado para modificación
+ */
+class EnhancedFormElementFactory {
+  private static calculatePosition(existingElements: FormElement[]) {
+    const baseY = 100 + existingElements.length * 150;
+    const baseX = 100 + (existingElements.length % 3) * 150;
+    return { x: baseX, y: baseY };
+  }
+
+  private static createBaseElement(
+    type: string,
+    existingElements: FormElement[]
+  ) {
+    return {
+      id: `${type}-${Date.now()}`,
+      label: `${type} element`,
+      position: this.calculatePosition(existingElements),
+      dimensions: { width: 400, height: 120 },
+      showBorder: true,
+      showShadow: false,
+    };
+  }
+
+  static createElement(
+    type: ElementType,
+    existingElements: FormElement[]
+  ): FormElement | null {
+    const baseProps = this.createBaseElement(type, existingElements);
+
+    const elementConfigs = {
+      nps: {
+        ...baseProps,
+        type: "nps" as const,
+        label: "NPS Question",
+        minValue: 0,
+        maxValue: 10,
+        minLabel: "Not likely",
+        maxLabel: "Very likely",
+        displayType: "numbers" as const,
+        dimensions: { width: 500, height: 120 },
+      },
+      "text-input": {
+        ...baseProps,
+        type: "text-input" as const,
+        label: "Text Input",
+        placeholder: "Enter text...",
+      },
+      textarea: {
+        ...baseProps,
+        type: "textarea" as const,
+        label: "Text Area",
+        placeholder: "Enter your feedback...",
+        rows: 4,
+        dimensions: { width: 400, height: 150 },
+      },
+      select: {
+        ...baseProps,
+        type: "select" as const,
+        label: "Select Option",
+        options: ["Option 1", "Option 2", "Option 3"],
+        placeholder: "Choose an option...",
+      },
+      button: {
+        ...baseProps,
+        type: "button" as const,
+        label: "Button",
+        text: "Submit",
+        variant: "primary" as const,
+        action: "submit" as const,
+        dimensions: { width: 200, height: 50 },
+      },
+      heading: {
+        ...baseProps,
+        type: "heading" as const,
+        label: "Heading",
+        text: "Survey Title",
+        level: 2 as const,
+        dimensions: { width: 400, height: 80 },
+      },
+      text: {
+        ...baseProps,
+        type: "text" as const,
+        label: "Text",
+        text: "Add your text here",
+        size: "md" as const,
+        dimensions: { width: 400, height: 60 },
+      },
+    };
+
+    return elementConfigs[type] || null;
+  }
+}
+
+/**
+ * Componente FormDesignerWithSave refactorizado
+ * Principio SRP: Solo se encarga de la composición y renderizado
+ * Principio DIP: Depende de abstracciones (hooks) no de implementaciones concretas
+ */
 export function FormDesignerWithSave({
   onSave,
   onChange,
@@ -53,303 +290,195 @@ export function FormDesignerWithSave({
     backgroundColor: "#ffffff",
     textColor: "#1f2937",
     primaryColor: "#3b82f6",
-    borderRadius: 8,
+    borderRadius: "8px",
     fontFamily: "Inter",
   },
-  surveyId, // ID del survey
+  surveyId,
 }: FormDesignerWithSaveProps) {
-  const [elements, setElements] = useState<FormElement[]>(initialElements);
-  const [selectedElement, setSelectedElement] = useState<FormElement | null>(
-    null
+  // Uso de hooks para separar responsabilidades
+  const {
+    elements,
+    settings,
+    style,
+    updateElements,
+    updateSettings,
+    updateStyle,
+  } = usePersistentFormState(
+    initialElements,
+    initialSettings,
+    initialStyle,
+    onChange
   );
+
+  const {
+    selectedElement,
+    addElement,
+    updateElement,
+    deleteElement,
+    clearAllElements,
+    selectElement,
+    duplicateElement,
+  } = useFormElementOperations(elements, updateElements);
+
+  // Estado de UI
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showCodeExport, setShowCodeExport] = useState(false);
   const [showFormSettings, setShowFormSettings] = useState(false);
-  const [formSettings, setFormSettings] = useState(initialSettings);
-  const [formStyle, setFormStyle] = useState(initialStyle);
   const [showMobileElementsPanel, setShowMobileElementsPanel] = useState(false);
   const [showMobilePropertiesPanel, setShowMobilePropertiesPanel] =
     useState(false);
-  const isFirstRender = useRef(true);
 
-  // Call onChange whenever elements, settings, or style change
-  useEffect(() => {
-    // Skip first render to avoid calling onChange with initial values
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    if (onChange) {
-      const currentData = {
-        elements,
-        settings: formSettings,
-        style: formStyle,
-      };
-      onChange(currentData);
-    }
-  }, [elements, formSettings, formStyle]); // Removed onChange from dependencies
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-
-    if (!over) return;
-
-    // Si se está arrastrando desde el sidebar izquierdo al canvas
-    if (over.id === "canvas" && typeof active.id === "string") {
-      const elementType = active.id;
-      const newElement = createNewElement(elementType as ElementType);
-
-      if (newElement) {
-        setElements((prev) => [...prev, newElement]);
-      }
-    }
-
-    // Si se está moviendo un elemento dentro del canvas
-    if (
-      over.id === "canvas" &&
-      typeof active.id === "string" &&
-      active.id.startsWith("element-")
-    ) {
-      const elementId = active.id.replace("element-", "");
-      const element = elements.find((el) => el.id === elementId);
-
-      if (element && event.delta) {
-        setElements((prev) =>
-          prev.map((el) =>
-            el.id === elementId
-              ? {
-                  ...el,
-                  position: {
-                    x: el.position.x + event.delta.x,
-                    y: el.position.y + event.delta.y,
-                  },
-                }
-              : el
-          )
-        );
-      }
-    }
-  };
-
-  const createNewElement = (type: string): FormElement | null => {
-    const id = `${type}-${Date.now()}`;
-    const baseY = 100 + elements.length * 150;
-    const baseX = 100 + (elements.length % 3) * 150;
-
-    const baseProps = {
-      id,
-      label: `${type} element`,
-      position: { x: baseX, y: baseY },
-      dimensions: { width: 400, height: 120 },
-      showBorder: true,
-      showShadow: false,
-    };
-
-    switch (type) {
-      case "nps":
-        return {
-          type: "nps",
-          ...baseProps,
-          label: "¿Qué tan probable es que recomiendes nuestro producto?",
-          minValue: 0,
-          maxValue: 10,
-          minLabel: "Nada probable",
-          maxLabel: "Muy probable",
-          displayType: "numbers" as const,
-          required: true,
-        };
-      case "text-input":
-        return {
-          type: "text-input",
-          ...baseProps,
-          label: "Campo de texto",
-          placeholder: "Ingresa texto...",
-          required: false,
-        };
-      case "textarea":
-        return {
-          type: "textarea",
-          ...baseProps,
-          label: "Comentarios adicionales",
-          placeholder: "Escribe tus comentarios...",
-          required: false,
-          rows: 4,
-        };
-      case "select":
-        return {
-          type: "select",
-          ...baseProps,
-          label: "Selecciona una opción",
-          options: ["Opción 1", "Opción 2", "Opción 3"],
-          required: false,
-          placeholder: "Selecciona...",
-        };
-      case "text":
-        return {
-          type: "text",
-          ...baseProps,
-          label: "Texto",
-          text: "Texto de ejemplo",
-          size: "md" as const,
-        };
-      case "heading":
-        return {
-          type: "heading",
-          ...baseProps,
-          label: "Encabezado",
-          text: "Título de ejemplo",
-          level: 2 as const,
-        };
-      default:
-        return null;
-    }
-  };
-
-  // Función para agregar elementos directamente (para mobile)
-  const addElementDirectly = (elementType: string) => {
-    const newElement = createNewElement(elementType as ElementType);
-    if (newElement) {
-      setElements((prev) => [...prev, newElement]);
-      setSelectedElement(newElement); // Seleccionar automáticamente el nuevo elemento
-      setShowMobileElementsPanel(false); // Cerrar el panel móvil
-    }
-  };
-
-  const handleSave = () => {
+  // Event handlers - Principio SRP
+  const handleSave = useCallback(() => {
     if (onSave) {
-      onSave({
-        elements,
-        settings: formSettings,
-        style: formStyle,
-      });
+      onSave({ elements, settings, style });
     }
-  };
+  }, [onSave, elements, settings, style]);
 
-  if (isPreviewMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* Modern Preview Header */}
-        <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-6 py-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Preview Mode
-                </h2>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Live Preview
-                </span>
-              </div>
-              <button
-                onClick={() => setIsPreviewMode(false)}
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:from-gray-200 hover:to-gray-300 font-medium transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md border border-gray-300/50"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-                Exit Preview
-              </button>
-            </div>
-          </div>
-        </div>
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
 
-        {/* Preview Content */}
-        <div className="max-w-4xl mx-auto p-4 sm:p-6">
-          <PreviewMode elements={elements} />
-        </div>
-      </div>
-    );
-  }
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
 
-  if (showCodeExport) {
-    return (
-      <CodeExport
-        elements={elements}
-        isOpen={true}
-        onClose={() => setShowCodeExport(false)}
-        surveyId={surveyId}
-        formSettings={formSettings}
-      />
-    );
-  }
+      if (!over) return;
 
-  if (showFormSettings) {
-    return (
-      <FormSettings
-        isOpen={true}
-        formSettings={formSettings}
-        onClose={() => setShowFormSettings(false)}
-        onSave={(settings) => {
-          setFormSettings(settings);
-          setShowFormSettings(false);
-        }}
-      />
-    );
-  }
+      // Crear nuevo elemento desde sidebar
+      if (
+        over.id === "canvas" &&
+        typeof active.id === "string" &&
+        !active.id.startsWith("element-")
+      ) {
+        const elementType = active.id as ElementType;
+        const newElement = EnhancedFormElementFactory.createElement(
+          elementType,
+          elements
+        );
+        if (newElement) {
+          addElement(newElement);
+        }
+      }
+
+      // Mover elemento existente
+      if (
+        over.id === "canvas" &&
+        typeof active.id === "string" &&
+        active.id.startsWith("element-")
+      ) {
+        const elementId = active.id.replace("element-", "");
+        const element = elements.find((el) => el.id === elementId);
+
+        if (element && event.delta) {
+          const updatedElement = {
+            ...element,
+            position: {
+              x: element.position.x + event.delta.x,
+              y: element.position.y + event.delta.y,
+            },
+          };
+          updateElement(updatedElement);
+        }
+      }
+    },
+    [elements, addElement, updateElement]
+  );
+
+  const togglePreviewMode = useCallback(() => {
+    setIsPreviewMode((prev) => !prev);
+  }, []);
+
+  const toggleFormSettings = useCallback(() => {
+    setShowFormSettings((prev) => !prev);
+  }, []);
+
+  const openCodeExport = useCallback(() => {
+    setShowCodeExport(true);
+  }, []);
+
+  const closeCodeExport = useCallback(() => {
+    setShowCodeExport(false);
+  }, []);
+
+  const closeFormSettings = useCallback(() => {
+    setShowFormSettings(false);
+  }, []);
+
+  const handleDeleteSelected = useCallback(() => {
+    if (selectedElement) {
+      deleteElement(selectedElement.id);
+    }
+  }, [selectedElement, deleteElement]);
+
+  const handleDuplicateSelected = useCallback(() => {
+    if (selectedElement) {
+      duplicateElement(selectedElement.id);
+    }
+  }, [selectedElement, duplicateElement]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-gray-50 overflow-hidden">
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Left Sidebar - Hidden on mobile, expandable */}
-        <div className="lg:block hidden h-full overflow-y-auto">
-          <LeftSidebar />
-        </div>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex h-screen bg-gray-50 relative">
+        {/* Left Sidebar - Desktop */}
+        {!isPreviewMode && (
+          <div className="hidden lg:block">
+            <LeftSidebar />
+          </div>
+        )}
 
-        {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-          {/* Top Toolbar */}
-          <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                  Form Designer
-                </h2>
-                <span className="text-xs sm:text-sm text-gray-500">
-                  {elements.length} element{elements.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Enhanced Toolbar */}
+          <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+            <h1 className="text-xl font-semibold text-gray-900">
+              {isPreviewMode ? "Survey Preview" : "NPS Survey Designer"}
+            </h1>
+            <div className="flex gap-2">
+              {!isPreviewMode && selectedElement && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                >
+                  Delete Selected
+                </button>
+              )}
+              {!isPreviewMode && (
+                <button
+                  onClick={clearAllElements}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Clear All
+                </button>
+              )}
               <button
-                onClick={() => setShowFormSettings(true)}
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
+                onClick={togglePreviewMode}
+                className={`px-4 py-2 text-sm font-medium border border-transparent rounded-md ${
+                  isPreviewMode
+                    ? "text-white bg-green-600 hover:bg-green-700"
+                    : "text-white bg-gray-600 hover:bg-gray-700"
+                }`}
               >
-                <Settings className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
-                <span className="hidden sm:inline">Settings</span>
+                {isPreviewMode ? "Exit Preview" : "Preview"}
               </button>
-              <button
-                onClick={() => setIsPreviewMode(true)}
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
-              >
-                <Eye className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
-                <span className="hidden sm:inline">Preview</span>
-              </button>
-              <button
-                onClick={() => setShowCodeExport(true)}
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 whitespace-nowrap"
-              >
-                <Copy className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1 inline" />
-                <span className="hidden sm:inline">Export</span>
-              </button>
+              {!isPreviewMode && (
+                <>
+                  <button
+                    onClick={toggleFormSettings}
+                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700"
+                  >
+                    Configuración
+                  </button>
+                  <button
+                    onClick={openCodeExport}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                  >
+                    Generar Script
+                  </button>
+                </>
+              )}
               {onSave && (
                 <button
                   onClick={handleSave}
@@ -362,171 +491,135 @@ export function FormDesignerWithSave({
             </div>
           </div>
 
-          {/* Canvas */}
-          {/* Canvas Area */}
-          <div className="flex-1 overflow-auto">
+          {/* Content Area */}
+          {isPreviewMode ? (
+            <div className="flex-1 overflow-auto">
+              <PreviewMode elements={elements} />
+            </div>
+          ) : (
             <Canvas
               elements={elements}
               selectedElement={selectedElement}
-              onSelectElement={setSelectedElement}
-              onUpdateElement={(element: FormElement) => {
-                setElements((prev) =>
-                  prev.map((el) => (el.id === element.id ? element : el))
-                );
-                // Also update the selected element to reflect changes
-                if (selectedElement && selectedElement.id === element.id) {
-                  setSelectedElement(element);
-                }
-              }}
-              onDeleteElement={(elementId: string) => {
-                setElements((prev) => prev.filter((el) => el.id !== elementId));
-                // Clear selection if deleted element was selected
-                if (selectedElement && selectedElement.id === elementId) {
-                  setSelectedElement(null);
-                }
-              }}
+              onSelectElement={selectElement}
+              onUpdateElement={updateElement}
+              onDeleteElement={deleteElement}
             />
+          )}
+        </div>
 
-            {/* Mobile Control Buttons */}
-            <div className="lg:hidden fixed bottom-4 right-4 z-10">
-              <div className="flex flex-col space-y-3 items-end">
-                {/* Elements Panel Button */}
-                <button
-                  className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => setShowMobileElementsPanel(true)}
-                  title="Add Elements"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
+        {/* Right Sidebar - Desktop */}
+        {!isPreviewMode && (
+          <div className="hidden lg:block">
+            <RightSidebar
+              selectedElement={selectedElement}
+              onUpdateElement={updateElement}
+            />
+          </div>
+        )}
 
-                {/* Properties Panel Button - Only show if element is selected */}
-                {selectedElement && (
+        {/* Mobile Elements Panel */}
+        {showMobileElementsPanel && (
+          <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Add Elements
+                  </h3>
                   <button
-                    className="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
-                    onClick={() => setShowMobilePropertiesPanel(true)}
-                    title="Element Properties"
+                    onClick={() => setShowMobileElementsPanel(false)}
+                    className="p-2 rounded-full hover:bg-gray-100"
                   >
-                    <Settings className="w-5 h-5" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
                   </button>
-                )}
+                </div>
+              </div>
+              <div className="p-4 overflow-y-auto">
+                <LeftSidebar />
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Right Sidebar - Hidden on mobile */}
-        <div className="hidden lg:block h-full overflow-y-auto">
-          <RightSidebar
-            selectedElement={selectedElement}
-            onUpdateElement={(updatedElement: FormElement) => {
-              setElements((prev) =>
-                prev.map((el) =>
-                  el.id === updatedElement.id ? updatedElement : el
-                )
-              );
-              // Also update the selected element to reflect changes in the sidebar
-              if (selectedElement && selectedElement.id === updatedElement.id) {
-                setSelectedElement(updatedElement);
-              }
-            }}
-          />
-        </div>
+        {/* Mobile Properties Panel */}
+        {showMobilePropertiesPanel && selectedElement && (
+          <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Properties
+                  </h3>
+                  <button
+                    onClick={() => setShowMobilePropertiesPanel(false)}
+                    className="p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="p-4 overflow-y-auto">
+                <RightSidebar
+                  selectedElement={selectedElement}
+                  onUpdateElement={updateElement}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Drag Overlay */}
         <DragOverlay>
           {activeId ? (
-            <div className="p-2 bg-blue-100 rounded">Dragging</div>
+            <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
+              {activeId}
+            </div>
           ) : null}
         </DragOverlay>
-      </DndContext>
 
-      {/* Mobile Elements Panel */}
-      {showMobileElementsPanel && (
-        <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Add Elements
-                </h3>
-                <button
-                  onClick={() => setShowMobileElementsPanel(false)}
-                  className="p-2 rounded-full hover:bg-gray-100"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="p-4 overflow-y-auto">
-              <LeftSidebar onAddElement={addElementDirectly} isMobile={true} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Properties Panel */}
-      {showMobilePropertiesPanel && selectedElement && (
-        <div className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-50">
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[80vh] overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Properties
-                </h3>
-                <button
-                  onClick={() => setShowMobilePropertiesPanel(false)}
-                  className="p-2 rounded-full hover:bg-gray-100"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div className="p-4 overflow-y-auto">
-              <RightSidebar
-                selectedElement={selectedElement}
-                onUpdateElement={(updatedElement: FormElement) => {
-                  setElements((prev) =>
-                    prev.map((el) =>
-                      el.id === updatedElement.id ? updatedElement : el
-                    )
-                  );
-                  // Also update the selected element to reflect changes in the sidebar
-                  if (
-                    selectedElement &&
-                    selectedElement.id === updatedElement.id
-                  ) {
-                    setSelectedElement(updatedElement);
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Modals */}
+        {showCodeExport && (
+          <CodeExport
+            isOpen={showCodeExport}
+            elements={elements}
+            formSettings={settings}
+            onClose={closeCodeExport}
+            surveyId={surveyId}
+          />
+        )}
+        {showFormSettings && (
+          <FormSettings
+            isOpen={showFormSettings}
+            formSettings={settings}
+            onClose={closeFormSettings}
+            onSave={updateSettings}
+          />
+        )}
+      </div>
+    </DndContext>
   );
 }
