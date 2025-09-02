@@ -214,18 +214,6 @@ export default function EditSurveyPage() {
               {survey.isActive ? "Active" : "Inactive"}
             </button>
 
-            {survey.isActive && (
-              <a
-                href={`/widget/${surveyId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-200"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Preview
-              </a>
-            )}
-
             <Link
               href={`/dashboard/results/${surveyId}`}
               className="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-200"
@@ -238,11 +226,12 @@ export default function EditSurveyPage() {
       </div>
 
       {/* Form Designer */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <FormDesignerWithSave
           initialElements={survey?.elements || []}
           initialSettings={survey?.settings || {}}
           initialStyle={survey?.style || {}}
+          surveyId={survey?.id}
           onChange={handleFormDataChange}
           saveButtonText="Update Survey"
           isLoading={isSaving}

@@ -153,7 +153,7 @@ function NPSRenderer({
               className={`border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center justify-center ${
                 element.displayType === "emojis"
                   ? "w-12 h-12 text-lg"
-                  : "w-10 h-10 text-sm font-medium"
+                  : "w-10 h-10 text-sm font-semibold text-gray-700"
               }`}
               title={`${num}`}
             >
@@ -166,7 +166,7 @@ function NPSRenderer({
             {numbers.map((num) => (
               <span
                 key={`num-${num}`}
-                className="text-xs text-gray-500 text-center w-12"
+                className="text-xs text-gray-700 font-medium text-center w-12"
               >
                 {num}
               </span>

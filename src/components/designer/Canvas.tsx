@@ -194,13 +194,13 @@ export function Canvas({
   });
 
   return (
-    <div className="flex-1 relative overflow-hidden">
+    <div className="h-full w-full">
       <div
         ref={setNodeRef}
         className={`
           w-full h-full relative bg-white
           ${isOver ? "bg-blue-50" : ""}
-          min-h-[calc(100vh-8rem)] sm:min-h-[500px]
+          min-h-full
         `}
         onClick={() => onSelectElement(null)}
         style={{

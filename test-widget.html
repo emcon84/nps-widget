@@ -344,7 +344,7 @@
 
           <div class="widget-container">
             <!-- Aquí se insertará el widget -->
-            <div id="nps-nps-survey-1756739096474"></div>
+            <div id="nps-widget-nps-survey-1756819824864"></div>
           </div>
           <div style="text-align: center; margin-top: 20px">
             <button
@@ -387,187 +387,348 @@
       });
 
       // Widget Script
-      function initializeWidget() {
-        // Limpiar el contenedor
-        const container = document.getElementById(
-          "nps-nps-survey-1756739096474"
-        );
-        container.innerHTML = "";
-
-        // Script compacto ultra-minificado
-        (function () {
-          var config = {
-            id: "nps-survey-1756739096474",
-            elements: [
-              {
-                id: "nps-1756738071200",
-                type: "nps",
-                label: "NPS Question",
-                required: false,
-                minValue: 0,
-                maxValue: 10,
-                minLabel: "Not likely",
-                maxLabel: "Very likely",
-                displayType: "numbers",
+      (function () {
+        const config = {
+          id: "nps-survey-1756819824864",
+          elements: [
+            {
+              id: "nps-1756819505879",
+              type: "nps",
+              label: "Que te parecio estooooooooo?",
+              required: true,
+              position: {
+                x: 100,
+                y: 100,
               },
-              {
-                id: "text-input-1756738078018",
-                type: "text-input",
-                label: "Text Input",
-                required: false,
-                placeholder: "Enter text...",
+              dimensions: {
+                width: 400,
+                height: 120,
               },
-            ],
-            style: {
-              fontFamily: "Arial, sans-serif",
-              primaryColor: "#3b82f6",
-              backgroundColor: "#ffffff",
-              borderRadius: "8px",
+              showBorder: true,
+              showShadow: false,
+              minValue: 0,
+              maxValue: 10,
+              minLabel: "Nada probable",
+              maxLabel: "Muy probable",
+              displayType: "emojis",
             },
-            settings: {
-              submitEndpoint: "https://httpbin.org/post",
-              submitMethod: "POST",
-              webhookHeaders: {},
-              successMessage: "Gracias por tu feedback!",
-              errorMessage: "Error al enviar. Por favor intenta de nuevo.",
+            {
+              id: "textarea-1756819511192",
+              type: "textarea",
+              label: "Comentarios adicionales",
+              required: false,
+              position: {
+                x: 110,
+                y: 320,
+              },
+              dimensions: {
+                width: 400,
+                height: 120,
+              },
+              showBorder: true,
+              showShadow: false,
+              placeholder: "Escribe tus comentarios...",
+              rows: 4,
             },
-          };
+          ],
+          style: {
+            fontFamily: "Arial, sans-serif",
+            primaryColor: "#3b82f6",
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+          },
+          settings: {
+            errorMessage: "Error al enviar. Por favor intenta de nuevo.",
+            submitMethod: "POST",
+            submitEndpoint: "",
+            successMessage: "¡Gracias por tu feedback!",
+            webhookHeaders: {},
+          },
+        };
 
-          var d = document;
-          var s = d.createElement("style");
-          s.textContent =
-            ".nw{max-width:600px;margin:20px auto;padding:24px;background:#fff;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);font-family:Arial,sans-serif}.ne{margin-bottom:20px}.nl{display:block;font-weight:600;margin-bottom:8px;color:#374151}.nr{color:#ef4444}.ns{display:flex;gap:8px;justify-content:space-between;margin:16px 0}.nb{flex:1;padding:12px 8px;border:2px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;transition:all 0.2s;font-weight:500;text-align:center}.nb:hover{border-color:" +
-            config.style.primaryColor +
-            ";background:" +
-            config.style.primaryColor +
-            "15}.nb.sel{border-color:" +
-            config.style.primaryColor +
-            ";background:" +
-            config.style.primaryColor +
-            ";color:#fff}.ni{width:100%;padding:12px;border:2px solid #d1d5db;border-radius:6px;font-size:14px}.ni:focus{outline:none;border-color:" +
-            config.style.primaryColor +
-            "}.btn{background:" +
-            config.style.primaryColor +
-            ";color:#fff;padding:12px 24px;border:none;border-radius:6px;font-weight:600;cursor:pointer}";
-          d.head.appendChild(s);
+        function createNPSWidget(config) {
+          const container = document.getElementById("nps-widget-" + config.id);
+          if (!container) return;
 
-          var html = '<div class="nw">';
-          config.elements.forEach(function (e) {
-            html += '<div class="ne">';
-            if (e.type === "nps") {
-              html +=
-                '<label class="nl">' +
-                e.label +
-                (e.required ? ' <span class="nr">*</span>' : "") +
-                "</label>";
-              html +=
-                '<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:#6b7280">';
-              html += "<span>" + (e.minLabel || "Not likely") + "</span>";
-              html +=
-                "<span>" + (e.maxLabel || "Very likely") + "</span></div>";
-              html += '<div class="ns" data-id="' + e.id + '">';
-              for (var i = e.minValue; i <= e.maxValue; i++) {
-                html +=
-                  '<button type="button" class="nb" data-v="' +
-                  i +
-                  '">' +
-                  i +
-                  "</button>";
+          // Crear estilos
+          const styles = `
+      .nps-widget {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 24px;
+        background: ${config.style.backgroundColor};
+        border-radius: ${config.style.borderRadius};
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        font-family: ${config.style.fontFamily};
+      }
+      .nps-element {
+        margin-bottom: 20px;
+      }
+      .nps-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #374151;
+      }
+      .nps-required {
+        color: #ef4444;
+      }
+      .nps-scale {
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        margin: 16px 0;
+      }
+      .nps-scale-button {
+        flex: 1;
+        padding: 12px 8px;
+        border: 2px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+        text-align: center;
+      }
+      .nps-scale-button:hover {
+        border-color: ${config.style.primaryColor};
+        background: ${config.style.primaryColor}15;
+      }
+      .nps-scale-button.selected {
+        border-color: ${config.style.primaryColor};
+        background: ${config.style.primaryColor};
+        color: white;
+      }
+      .nps-input, .nps-textarea, .nps-select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+      }
+      .nps-input:focus, .nps-textarea:focus, .nps-select:focus {
+        outline: none;
+        border-color: ${config.style.primaryColor};
+      }
+      .nps-submit {
+        background: ${config.style.primaryColor};
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .nps-submit:hover {
+        opacity: 0.9;
+      }
+      .nps-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #6b7280;
+      }
+    `;
+
+          // Insertar estilos
+          const styleSheet = document.createElement("style");
+          styleSheet.textContent = styles;
+          document.head.appendChild(styleSheet);
+
+          // Crear HTML del widget
+          let html = '<div class="nps-widget">';
+
+          config.elements.forEach((element) => {
+            html += '<div class="nps-element">';
+
+            if (element.type === "nps") {
+              html += `
+          <label class="nps-label">
+            ${element.label}
+            ${element.required ? '<span class="nps-required">*</span>' : ""}
+          </label>
+          <div class="nps-labels">
+            <span>${element.minLabel || "Not likely"}</span>
+            <span>${element.maxLabel || "Very likely"}</span>
+          </div>
+          <div class="nps-scale" data-element-id="${element.id}">
+        `;
+
+              for (let i = element.minValue; i <= element.maxValue; i++) {
+                if (element.displayType === "emojis") {
+                  const emojis = [
+                    "😤",
+                    "😠",
+                    "😞",
+                    "🙁",
+                    "😐",
+                    "😕",
+                    "🙂",
+                    "😊",
+                    "😃",
+                    "😍",
+                    "🤩",
+                  ];
+                  const emojiIndex = Math.round(
+                    ((i - element.minValue) /
+                      (element.maxValue - element.minValue)) *
+                      (emojis.length - 1)
+                  );
+                  html += `<button type="button" class="nps-scale-button" data-value="${i}">${emojis[emojiIndex]}</button>`;
+                } else {
+                  html += `<button type="button" class="nps-scale-button" data-value="${i}">${i}</button>`;
+                }
               }
               html += "</div>";
-            } else if (e.type === "text-input") {
-              html +=
-                '<label class="nl">' +
-                e.label +
-                (e.required ? ' <span class="nr">*</span>' : "") +
-                "</label>";
-              html +=
-                '<input type="text" class="ni" placeholder="' +
-                (e.placeholder || "") +
-                '" data-id="' +
-                e.id +
-                '">';
+            } else if (element.type === "text-input") {
+              html += `
+          <label class="nps-label">
+            ${element.label}
+            ${element.required ? '<span class="nps-required">*</span>' : ""}
+          </label>
+          <input type="text" class="nps-input" placeholder="${element.placeholder || ""}" 
+                 data-element-id="${element.id}" ${element.maxLength ? 'maxlength="' + element.maxLength + '"' : ""}>
+        `;
+            } else if (element.type === "textarea") {
+              html += `
+          <label class="nps-label">
+            ${element.label}
+            ${element.required ? '<span class="nps-required">*</span>' : ""}
+          </label>
+          <textarea class="nps-textarea" placeholder="${element.placeholder || ""}" 
+                    data-element-id="${element.id}" rows="${element.rows || 4}"
+                    ${element.maxLength ? 'maxlength="' + element.maxLength + '"' : ""}></textarea>
+        `;
+            } else if (element.type === "select") {
+              html += `
+          <label class="nps-label">
+            ${element.label}
+            ${element.required ? '<span class="nps-required">*</span>' : ""}
+          </label>
+          <select class="nps-select" data-element-id="${element.id}">
+            <option value="">${element.placeholder || "Choose an option..."}</option>
+            ${element.options.map((opt) => `<option value="${opt}">${opt}</option>`).join("")}
+          </select>
+        `;
+            } else if (element.type === "heading") {
+              html += `<h${element.level} style="margin: 0 0 16px 0; color: #111827;">${element.text}</h${element.level}>`;
+            } else if (element.type === "text") {
+              html += `<p style="margin: 0 0 16px 0; color: #374151;">${element.text}</p>`;
             }
+
             html += "</div>";
           });
-          html +=
-            '<button type="submit" class="btn">Submit Survey</button></div>';
 
-          var container = d.getElementById("nps-" + config.id);
+          html +=
+            '<button type="submit" class="nps-submit">Submit Survey</button>';
+          html += "</div>";
+
           container.innerHTML = html;
 
-          container.querySelectorAll(".nb").forEach(function (b) {
-            b.addEventListener("click", function () {
-              this.parentElement.querySelectorAll(".nb").forEach(function (x) {
-                x.classList.remove("sel");
-              });
-              this.classList.add("sel");
+          // Agregar interactividad
+          // NPS Scale clicks
+          container.querySelectorAll(".nps-scale-button").forEach((button) => {
+            button.addEventListener("click", function () {
+              // Deseleccionar otros botones en la misma escala
+              this.parentElement
+                .querySelectorAll(".nps-scale-button")
+                .forEach((b) => b.classList.remove("selected"));
+              // Seleccionar este botón
+              this.classList.add("selected");
             });
           });
 
+          // Submit handler
           container
-            .querySelector(".btn")
-            .addEventListener("click", function () {
-              var formData = {};
-              container.querySelectorAll(".ns .sel").forEach(function (b) {
-                formData[b.parentElement.dataset.id] = b.dataset.v;
-              });
-              container.querySelectorAll(".ni").forEach(function (i) {
-                if (i.value) formData[i.dataset.id] = i.value;
-              });
+            .querySelector(".nps-submit")
+            .addEventListener("click", async function () {
+              const formData = {};
 
-              var data = {
+              // Recolectar datos de NPS
+              container
+                .querySelectorAll(".nps-scale .selected")
+                .forEach((button) => {
+                  const elementId = button.parentElement.dataset.elementId;
+                  formData[elementId] = button.dataset.value;
+                });
+
+              // Recolectar datos de inputs
+              container
+                .querySelectorAll(".nps-input, .nps-textarea, .nps-select")
+                .forEach((input) => {
+                  if (input.value) {
+                    formData[input.dataset.elementId] = input.value;
+                  }
+                });
+
+              // Preparar datos para envío
+              const submitData = {
                 timestamp: new Date().toISOString(),
                 formId: config.id,
                 responses: formData,
                 userAgent: navigator.userAgent,
-                pageUrl: location.href,
+                pageUrl: window.location.href,
               };
 
-              console.log("Survey Data to send:", data);
-
+              // Enviar datos si hay endpoint configurado
               if (config.settings.submitEndpoint) {
-                var btn = this;
-                btn.disabled = true;
-                btn.textContent = "Enviando...";
+                try {
+                  this.disabled = true;
+                  this.textContent = "Enviando...";
 
-                fetch(config.settings.submitEndpoint, {
-                  method: config.settings.submitMethod,
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(data),
-                })
-                  .then(function (r) {
-                    if (r.ok) {
-                      return r.json();
-                    } else {
-                      throw new Error("Server error");
-                    }
-                  })
-                  .then(function (result) {
-                    console.log("Server response:", result);
-                    container.innerHTML =
-                      '<div style="text-align:center;padding:40px;color:#10b981"><h3 style="margin:0 0 8px 0">' +
-                      config.settings.successMessage +
-                      '</h3><p style="margin:0;color:#6b7280">Tu respuesta ha sido registrada.</p><button onclick="initializeWidget()" style="margin-top:20px;background:#3b82f6;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;">Probar de Nuevo</button></div>';
-                  })
-                  .catch(function (e) {
-                    console.error("Error:", e);
-                    var err = d.createElement("div");
-                    err.style.cssText =
-                      "background:#fef2f2;color:#dc2626;padding:12px;border-radius:6px;margin-top:16px;text-align:center";
-                    err.innerHTML =
-                      "<strong>Error de envio detectado</strong><br>Los datos se han mostrado en la consola (F12).<br><small>Revisa la pestana Console para ver los datos.</small>";
-                    container.appendChild(err);
-                    btn.disabled = false;
-                    btn.textContent = "Submit Survey";
+                  const headers = {
+                    "Content-Type": "application/json",
+                    ...config.settings.webhookHeaders,
+                  };
+
+                  const response = await fetch(config.settings.submitEndpoint, {
+                    method: config.settings.submitMethod,
+                    headers: headers,
+                    body: JSON.stringify(submitData),
                   });
+
+                  if (response.ok) {
+                    // Mostrar mensaje de éxito
+                    container.innerHTML = `
+              <div style="text-align: center; padding: 40px; color: #10b981;">
+                <h3 style="margin: 0 0 8px 0;">${config.settings.successMessage}</h3>
+                <p style="margin: 0; color: #6b7280;">Tu respuesta ha sido registrada.</p>
+              </div>
+            `;
+                  } else {
+                    throw new Error("Error en la respuesta del servidor");
+                  }
+                } catch (error) {
+                  console.error("Error sending survey data:", error);
+                  // Mostrar mensaje de error
+                  const errorDiv = document.createElement("div");
+                  errorDiv.style.cssText =
+                    "background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 6px; margin-top: 16px; text-align: center;";
+                  errorDiv.textContent = config.settings.errorMessage;
+                  container.appendChild(errorDiv);
+
+                  this.disabled = false;
+                  this.textContent = "Submit Survey";
+                }
               } else {
-                console.log("Survey Data:", data);
-                alert("Survey submitted!");
+                // Fallback si no hay endpoint configurado
+                console.log("Survey Data:", submitData);
+
+                if (window.onNPSSubmit) {
+                  window.onNPSSubmit(submitData);
+                } else {
+                  alert("Survey submitted! Data logged to console.");
+                }
               }
             });
-        })();
-      }
+        }
+
+        // Inicializar widget
+        createNPSWidget(config);
+      })();
     </script>
   </body>
 </html>

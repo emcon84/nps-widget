@@ -33,6 +33,7 @@ interface FormDesignerWithSaveProps {
   initialElements?: FormElement[];
   initialSettings?: any;
   initialStyle?: any;
+  surveyId?: string; // ID del survey para el widget embebible
 }
 
 export function FormDesignerWithSave({
@@ -55,6 +56,7 @@ export function FormDesignerWithSave({
     borderRadius: 8,
     fontFamily: "Inter",
   },
+  surveyId, // ID del survey
 }: FormDesignerWithSaveProps) {
   const [elements, setElements] = useState<FormElement[]>(initialElements);
   const [selectedElement, setSelectedElement] = useState<FormElement | null>(
@@ -283,6 +285,7 @@ export function FormDesignerWithSave({
         elements={elements}
         isOpen={true}
         onClose={() => setShowCodeExport(false)}
+        surveyId={surveyId}
         formSettings={formSettings}
       />
     );
@@ -303,15 +306,15 @@ export function FormDesignerWithSave({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row h-screen bg-gray-50 overflow-hidden">
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         {/* Left Sidebar - Hidden on mobile, expandable */}
-        <div className="lg:block hidden h-full">
+        <div className="lg:block hidden h-full overflow-y-auto">
           <LeftSidebar />
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
           {/* Top Toolbar */}
           <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -361,7 +364,7 @@ export function FormDesignerWithSave({
 
           {/* Canvas */}
           {/* Canvas Area */}
-          <div className="flex-1 min-h-0 relative">
+          <div className="flex-1 overflow-auto">
             <Canvas
               elements={elements}
               selectedElement={selectedElement}
@@ -412,7 +415,7 @@ export function FormDesignerWithSave({
         </div>
 
         {/* Right Sidebar - Hidden on mobile */}
-        <div className="hidden lg:block h-full">
+        <div className="hidden lg:block h-full overflow-y-auto">
           <RightSidebar
             selectedElement={selectedElement}
             onUpdateElement={(updatedElement: FormElement) => {

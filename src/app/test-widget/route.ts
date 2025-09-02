@@ -1,0 +1,197 @@
+import { NextRequest, NextResponse } from "next/server";
+
+// Página de test para el widget
+export async function GET() {
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test del Widget NPS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .test-controls {
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .warning {
+            background: #fef3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🎯 Widget NPS Test Page</h1>
+        <p>Esta página sirve para probar el widget NPS embebido</p>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Importante:</strong> Para que el widget funcione correctamente, necesitas:
+        <ol>
+            <li>Crear un survey en el dashboard</li>
+            <li>Copiar el ID del survey</li>
+            <li>Reemplazar 'test-survey-id' en el código JavaScript de abajo</li>
+        </ol>
+    </div>
+
+    <div class="test-controls">
+        <h2>🔧 Controles de Test</h2>
+        <p>Usa estos botones para probar diferentes funcionalidades del widget:</p>
+        
+        <button class="btn" onclick="showWidget()">Mostrar Widget Manualmente</button>
+        <button class="btn" onclick="clearStorage()">Limpiar LocalStorage</button>
+        <button class="btn" onclick="checkStatus()">Ver Estado del Widget</button>
+        <button class="btn" onclick="reloadWidget()">🔄 Recargar Widget</button>
+        
+        <div id="status" style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px;"></div>
+    </div>
+
+    <div class="section">
+        <h2>📋 Contenido de la Página</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        
+        <h3>¿Cómo funciona el widget?</h3>
+        <ul>
+            <li>Se carga automáticamente cuando visitas la página</li>
+            <li>Aparece como un popup modal después de unos segundos</li>
+            <li>Se muestra solo una vez por usuario (guardado en localStorage)</li>
+            <li>Puedes cerrarlo haciendo click fuera del modal o presionando ESC</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🌊 Más Contenido</h2>
+        <p>Este contenido adicional te permite hacer scroll y probar los diferentes triggers del widget.</p>
+        
+        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        
+        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+        
+        <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentibus voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+    </div>
+
+    <div class="section">
+        <h2>📊 Información Técnica</h2>
+        <p>El widget utiliza las siguientes tecnologías:</p>
+        <ul>
+            <li><code>localStorage</code> para recordar si ya se mostró</li>
+            <li><code>fetch API</code> para cargar la configuración del servidor</li>
+            <li><code>CSS moderno</code> con animaciones suaves</li>
+            <li><code>JavaScript vanilla</code> sin dependencias</li>
+        </ul>
+    </div>
+
+    <!-- NPS Widget Script -->
+    <script src="/widget.js"></script>
+    <script>
+        // Configurar el widget con el ID correcto
+        NPSWidget.create('cmf1q8vse0001suwk4741dklr', {
+            autoShow: true,
+            delay: 3000,
+            trigger: 'time',
+            showOnce: false,  // false para testing
+            noCache: true     // true para development - evita cache
+        });
+
+        // Funciones de test
+        function showWidget() {
+            if (window.NPSWidget) {
+                NPSWidget.show();
+                updateStatus('Widget mostrado manualmente');
+            } else {
+                updateStatus('Error: NPSWidget no está disponible');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            updateStatus('LocalStorage limpiado - el widget se mostrará de nuevo');
+        }
+
+        function checkStatus() {
+            const shown = localStorage.getItem('nps_widget_shown_cmf1q8vse0001suwk4741dklr');
+            const status = shown === 'true' ? 'Ya se mostró anteriormente' : 'Aún no se ha mostrado';
+            updateStatus('Estado: ' + status);
+        }
+
+        function reloadWidget() {
+            // Forzar recarga del widget con cache busting
+            if (window.NPSWidget) {
+                NPSWidget.loadSurveyConfig();
+                updateStatus('Widget recargado desde el servidor');
+            } else {
+                updateStatus('Error: NPSWidget no está disponible');
+            }
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = 
+                '<strong>📋 Estado:</strong> ' + message + 
+                '<br><small>Hora: ' + new Date().toLocaleTimeString() + '</small>';
+        }
+
+        // Mostrar estado inicial
+        window.addEventListener('load', function() {
+            setTimeout(checkStatus, 1000);
+        });
+    </script>
+</body>
+</html>
+  `;
+
+  return new NextResponse(html, {
+    headers: {
+      "Content-Type": "text/html",
+    },
+  });
+}
