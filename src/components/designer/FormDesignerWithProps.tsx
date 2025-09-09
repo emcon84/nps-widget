@@ -197,6 +197,14 @@ export function FormDesignerWithProps({
     }
   };
 
+  // Función simplificada para agregar elementos mediante clic
+  const handleAddElement = (type: string) => {
+    const newElement = createNewElement(type as ElementType);
+    if (newElement) {
+      setElements((prev) => [...prev, newElement]);
+    }
+  };
+
   if (isPreviewMode) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -247,7 +255,7 @@ export function FormDesignerWithProps({
     <div className="flex h-screen bg-gray-50">
       <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         {/* Left Sidebar */}
-        <LeftSidebar />
+        <LeftSidebar onAddElement={handleAddElement} />
 
         {/* Main Canvas Area */}
         <div className="flex-1 flex flex-col">
