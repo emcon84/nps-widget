@@ -122,14 +122,16 @@ export function CodeExport({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <Code className="w-6 h-6 text-blue-600" />
             <div>
-              <h2 className="text-xl font-semibold">Embed Code</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Embed Code
+              </h2>
               <p className="text-sm text-gray-600">
                 Copia y pega este código en tu sitio web
               </p>
@@ -162,7 +164,7 @@ export function CodeExport({
             className={`px-6 py-3 font-medium transition-colors ${
               selectedTab === "simple"
                 ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                : "text-gray-800 hover:text-gray-900"
             }`}
           >
             Recomendado
@@ -172,7 +174,7 @@ export function CodeExport({
             className={`px-6 py-3 font-medium transition-colors ${
               selectedTab === "custom"
                 ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                : "text-gray-800 hover:text-gray-900"
             }`}
           >
             Opciones Avanzadas
@@ -182,7 +184,7 @@ export function CodeExport({
             className={`px-6 py-3 font-medium transition-colors ${
               selectedTab === "manual"
                 ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
+                : "text-gray-800 hover:text-gray-900"
             }`}
           >
             Control Manual
@@ -204,8 +206,10 @@ export function CodeExport({
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Características:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <h4 className="font-semibold mb-2 text-gray-900">
+                  Características:
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1">
                   <li>• Aparece automáticamente como popup modal</li>
                   <li>• Se muestra solo una vez por usuario</li>
                   <li>• Se actualiza automáticamente si cambias el survey</li>
@@ -228,8 +232,10 @@ export function CodeExport({
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Opciones disponibles:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <h4 className="font-semibold mb-2 text-gray-900">
+                  Opciones disponibles:
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1">
                   <li>
                     • <code>trigger</code>: 'time' (temporizador), 'scroll'
                     (scroll), 'exit' (salida), 'manual'
@@ -264,8 +270,10 @@ export function CodeExport({
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Casos de uso:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <h4 className="font-semibold mb-2 text-gray-900">
+                  Casos de uso:
+                </h4>
+                <ul className="text-sm text-gray-700 space-y-1">
                   <li>• Botón "Feedback" en tu navegación</li>
                   <li>• Después de una acción específica del usuario</li>
                   <li>• Al completar una compra o proceso</li>
@@ -278,7 +286,9 @@ export function CodeExport({
           {/* Code Block */}
           <div className="relative mt-6">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold">Código para copiar:</h4>
+              <h4 className="font-semibold text-gray-900">
+                Código para copiar:
+              </h4>
               <div className="flex gap-2">
                 <button
                   onClick={handleCopy}
@@ -308,8 +318,10 @@ export function CodeExport({
 
           {/* Instructions */}
           <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold mb-2">📋 Instrucciones:</h4>
-            <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+            <h4 className="font-semibold mb-2 text-gray-900">
+              📋 Instrucciones:
+            </h4>
+            <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
               <li>Copia el código de arriba</li>
               <li>Pégalo en cualquier lugar del HTML de tu sitio web</li>
               <li>¡Listo! El widget aparecerá automáticamente</li>

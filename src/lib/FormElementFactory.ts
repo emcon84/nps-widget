@@ -1,25 +1,16 @@
 import { FormElement, ElementType } from "@/types/form-elements";
 
 /**
- * Factory para crear elementos
+ * Factory para crear elementos simplificado
  * Principio OCP: Abierto para extensión, cerrado para modificación
  * Principio SRP: Una sola responsabilidad - creación de elementos
  */
 export class FormElementFactory {
-  private static calculatePosition(existingElements: FormElement[]) {
-    const baseY = 100 + existingElements.length * 150;
-    const baseX = 100 + (existingElements.length % 3) * 150;
-    return { x: baseX, y: baseY };
-  }
-
-  private static createBaseElement(
-    type: string,
-    existingElements: FormElement[]
-  ) {
+  private static createBaseElement(type: string) {
     return {
       id: `${type}-${Date.now()}`,
       label: `${type} element`,
-      position: this.calculatePosition(existingElements),
+      position: { x: 0, y: 0 }, // Ya no necesario pero mantenido por compatibilidad
       dimensions: { width: 400, height: 120 },
       showBorder: true,
       showShadow: false,
@@ -30,7 +21,7 @@ export class FormElementFactory {
     type: ElementType,
     existingElements: FormElement[]
   ): FormElement | null {
-    const baseProps = this.createBaseElement(type, existingElements);
+    const baseProps = this.createBaseElement(type);
 
     switch (type) {
       case "nps":
@@ -51,6 +42,7 @@ export class FormElementFactory {
           type: "text-input",
           label: "Text Input",
           placeholder: "Enter text...",
+          dimensions: { width: 400, height: 60 },
         };
       case "textarea":
         return {
@@ -68,6 +60,7 @@ export class FormElementFactory {
           label: "Select Option",
           options: ["Option 1", "Option 2", "Option 3"],
           placeholder: "Choose an option...",
+          dimensions: { width: 400, height: 60 },
         };
       case "button":
         return {

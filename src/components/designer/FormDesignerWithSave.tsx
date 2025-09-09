@@ -221,6 +221,7 @@ class EnhancedFormElementFactory {
         type: "text-input" as const,
         label: "Text Input",
         placeholder: "Enter text...",
+        dimensions: { width: 400, height: 60 },
       },
       textarea: {
         ...baseProps,
@@ -236,6 +237,7 @@ class EnhancedFormElementFactory {
         label: "Select Option",
         options: ["Option 1", "Option 2", "Option 3"],
         placeholder: "Choose an option...",
+        dimensions: { width: 400, height: 60 },
       },
       button: {
         ...baseProps,
@@ -387,6 +389,21 @@ export function FormDesignerWithSave({
     [elements, addElement, updateElement]
   );
 
+  // Función simplificada para agregar elementos mediante clic
+  const handleAddElement = useCallback(
+    (type: string) => {
+      const elementType = type as ElementType;
+      const newElement = EnhancedFormElementFactory.createElement(
+        elementType,
+        elements
+      );
+      if (newElement) {
+        addElement(newElement);
+      }
+    },
+    [elements, addElement]
+  );
+
   const togglePreviewMode = useCallback(() => {
     setIsPreviewMode((prev) => !prev);
   }, []);
@@ -425,7 +442,7 @@ export function FormDesignerWithSave({
         {/* Left Sidebar - Desktop */}
         {!isPreviewMode && (
           <div className="hidden lg:block">
-            <LeftSidebar />
+            <LeftSidebar onAddElement={handleAddElement} />
           </div>
         )}
 
@@ -547,7 +564,7 @@ export function FormDesignerWithSave({
                 </div>
               </div>
               <div className="p-4 overflow-y-auto">
-                <LeftSidebar />
+                <LeftSidebar onAddElement={handleAddElement} />
               </div>
             </div>
           </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useDraggable } from "@dnd-kit/core";
 import {
   MessageSquare,
   Type,
@@ -17,8 +16,7 @@ interface ElementButtonProps {
   label: string;
   icon: React.ReactNode;
   description: string;
-  onAddElement?: (type: string) => void; // Nueva prop para mobile
-  isMobile?: boolean; // Nueva prop para detectar mobile
+  onAddElement: (type: string) => void;
 }
 
 function ElementButton({
@@ -27,40 +25,15 @@ function ElementButton({
   icon,
   description,
   onAddElement,
-  isMobile = false,
 }: ElementButtonProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: type,
-      disabled: isMobile, // Deshabilitar drag en mobile
-    });
-
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
-
   const handleClick = () => {
-    if (isMobile && onAddElement) {
-      onAddElement(type);
-    }
+    onAddElement(type);
   };
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...(!isMobile ? listeners : {})}
-      {...(!isMobile ? attributes : {})}
       onClick={handleClick}
-      className={`
-        flex flex-col items-center p-3 sm:p-4 bg-white border-2 border-gray-200 rounded-lg transition-all
-        ${isMobile ? "cursor-pointer hover:bg-blue-50" : "cursor-grab"} 
-        hover:border-blue-300 hover:shadow-md
-        ${isDragging ? "opacity-50" : ""}
-        ${isMobile ? "active:scale-95" : ""}
-      `}
+      className="flex flex-col items-center p-3 sm:p-4 bg-white border-2 border-gray-200 rounded-lg transition-all cursor-pointer hover:border-blue-300 hover:shadow-md hover:bg-blue-50 active:scale-95"
     >
       <div className="text-blue-600 mb-2">{icon}</div>
       <span className="text-xs sm:text-sm font-medium text-gray-900 text-center">
@@ -75,10 +48,8 @@ function ElementButton({
 
 export function LeftSidebar({
   onAddElement,
-  isMobile = false,
 }: {
-  onAddElement?: (type: string) => void;
-  isMobile?: boolean;
+  onAddElement: (type: string) => void;
 }) {
   const elements = [
     {
@@ -130,9 +101,7 @@ export function LeftSidebar({
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Elements</h2>
         <p className="text-sm text-gray-600">
-          {isMobile
-            ? "Tap elements to add them to your survey"
-            : "Drag elements to the canvas to build your survey"}
+          Click elements to add them to your survey in order
         </p>
       </div>
 
@@ -145,7 +114,6 @@ export function LeftSidebar({
             icon={element.icon}
             description={element.description}
             onAddElement={onAddElement}
-            isMobile={isMobile}
           />
         ))}
       </div>
@@ -153,10 +121,11 @@ export function LeftSidebar({
       <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
         <h3 className="text-sm font-medium text-blue-900 mb-2">Tips</h3>
         <ul className="text-xs text-blue-700 space-y-1">
-          <li>• {isMobile ? "Tap" : "Drag"} elements to the canvas</li>
-          <li>• Click elements to edit properties</li>
+          <li>• Click elements to add them to your survey</li>
+          <li>• Elements appear in the order you select them</li>
+          <li>• Click elements in the preview to edit properties</li>
+          <li>• Delete elements you don't need</li>
           <li>• Use NPS scale for rating questions</li>
-          <li>• Export your design when finished</li>
         </ul>
       </div>
     </div>
